@@ -22,21 +22,7 @@
                                 <div class="text-center">
                                     <h1 class="h4 text-gray-900 mb-4">Bienvenido de nuevo!</h1>
                                     <small class="text-danger">
-                                        {% if form.errors %}
-                                            {% for field in form %}
-                                                {% if field.errors %}
-                                                    {% for error in field.errors %}
-                                                        {{ error|escape }}
-                                                    {% endfor %}
-                                                {% endif %}
-                                            {% endfor %}
-
-                                            {% if form.non_field_errors %}
-                                                {% for error in form.non_field_errors %}
-                                                    {{ error|escape }}
-                                                {% endfor %}
-                                            {% endif%}
-                                        {% endif %}
+                                        
                                     </small>
                                 </div>
                                 <form class="user" method="POST">
@@ -67,4 +53,23 @@
     </div>
 
 </div>
+{% endblock %}
+{% block js_page %}
+<script>
+    {% if form.errors %}
+        {% for field in form %}
+            {% if field.errors %}
+                {% for error in field.errors %}
+                    mensaje('{{ error|escape }}', 'red');
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                mensaje('{{ error|escape }}', 'red');
+            {% endfor %}
+        {% endif%}
+    {% endif %}
+</script>
 {% endblock %}
