@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin,\
      PermissionRequiredMixin
 from django.views import generic
 
-
+from django.contrib.messages.views import SuccessMessageMixin
 
 class MixinFormInvalid:
     def form_invalid(self,form):
@@ -37,4 +37,20 @@ class HomeSinPrivilegios(LoginRequiredMixin, generic.TemplateView):
     login_url = "bases:login"
     template_name="bases/sin_privilegios.html"
 
+class VistaBaseCreate(SuccessMessageMixin, SinPrivilegios, \
+    generic.CreateView):
+    context_object_name = 'obj'
+    success_message= 'Registro Agregado Satisfactoriamente'
 
+    def form_valid(self, form):
+        form.instance.uc=self.request.user
+        return super().form_valid(form)
+
+class VistaBaseEdit(SuccessMessageMixin, SinPrivilegios, \
+    generic.UpdateView):
+    context_object_name = 'obj'
+    success_message= 'Registro Actualizado Satisfactoriamente'
+
+    def form_valid(self, form):
+        form.instance.um=self.request.user.id
+        return super().form_valid(form)

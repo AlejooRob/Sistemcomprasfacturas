@@ -30,6 +30,7 @@
         <th>Email</th>
         <th>Identificación</th>
         <th>Dirección</th>
+        <th>Estado</th>
         <th class="all">Acciones</th>
       </thead>
       <tbody>
@@ -42,13 +43,18 @@
           <td>{{ item.email }}</td>
           <td>{{ item.identificacion }}</td>
           <td>{{ item.direccion }}</td>
+          <td onclick="inactivar({{ item.id }})">{# item.estado|yesno:'Activo,Inactivo' #}
+            {% if item.estado %}
+              <i class="far fa-thumbs-up text-primary"></i>
+            {% else %}
+              <i class="far fa-thumbs-down text-danger"></i>
+            {% endif %}
+          </td>
           <td>
             <button class="btn btn-warning btn-circle" onclick="return abrir_modal('{% url 'fac:cliente_edit' item.id %}')">
                 <i class="far fa-edit"></i>
             </button>
-            <button class="btn btn-danger btn-circle" onclick="return abrir_modal('{# url 'cmp:proveedor_inactivar' item.id #}')">
-              <i class="far fa-thumbs-down"></i>
-            </button>
+
           </td>
         </tr>
         {% endfor %}
@@ -59,6 +65,29 @@
 {% endblock %}
 {% block js_page %}
 <script>
+  function inactivar(id)
+  {
+    var data = {id:id};
+    data = JSON.stringify(data);
+    var token = '{{csrf_token}}';
+    $.ajax({
+      headers : {'X-CSRFToken': token},
+      type:'POST',
+      url: '/fac/clientes/estado/'+id,
+      success: function(response){
+        if(response==='OK'){
+          location.reload(true);
+        } else {
+          mensaje('Error intentando Cambiar Estado a Cliente')
+        }
+      },
+      error: function(jqXHR, textStatus, errorThrow){
+        console.log(textStatus, errorThrow);
+        mensaje(errorThrow, 'red');
+        cerrar_modal();
+      }
+    });
+  }
   // Call the dataTables jQuery plugin
   $(document).ready(function() {
     $('.table').DataTable({
