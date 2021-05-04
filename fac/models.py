@@ -93,8 +93,8 @@ class FacturaDet(ClassModel2):
     def save(self):
         self.sub_total = float(float(int(self.cantidad)) * float(self.precio))
         self.total = self.sub_total - float(self.descuento)
-        subtotal_iva=float(self.total * 0.12)
-        total_iva=self.total + self.subtotal_iva
+        self.subtotal_iva=float(self.total * 0.12)
+        self.total_iva=self.total + self.subtotal_iva
         super(FacturaDet, self).save()
     
     class Meta:
