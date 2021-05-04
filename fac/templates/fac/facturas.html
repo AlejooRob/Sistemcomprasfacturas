@@ -57,21 +57,21 @@
                                 <div class="row">
                                     <div class="col-lg-3">Descuento:</div>
                                     <div class="col-lg-8">
-                                        <input type="number" class="form-control text-right"  disabled
+                                        <input type="number" class="form-control text-right"  readonly
                                             name="descuento" id="descuento">
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-3">IVA:</div>
                                     <div class="col-lg-8">
-                                        <input type="number" class="form-control text-right mb-2"  disabled
+                                        <input type="number" class="form-control text-right mb-2"  readonly
                                         name="subtotal_iva" id="subtotal_iva">
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-3">Total:</div>
                                     <div class="col-lg-8">
-                                        <input type="number" class="form-control text-right"  disabled
+                                        <input type="text" class="form-control text-right"  readonly
                                             name="total" id="total">
                                     </div>
                                 </div>
@@ -138,7 +138,7 @@
                     <div class="row p-1">
                         <div class="col-lg-9 text-right">Total</div>
                         <div class="col-lg-3">
-                            <input type="number" class="form-control" name="total_detalle" id="total_detalle" placeholder="Total"
+                            <input type="text" class="form-control" name="total_detalle" id="total_detalle" placeholder="Total"
                             value="0.00" disabled>
                         </div>
                     </div>
@@ -168,6 +168,7 @@
                             <th data-field="subtotal">S. Total</th>
                             <th data-field="descuento">Des.</th>
                             <th data-field="total">Total</th>
+                            <th data-field="total">Total IVA</th>
                             <th class="all">Acciones</th>
                         </thead>
                         <tbody>
@@ -180,8 +181,14 @@
                                 <td>{{ item.sub_total }}</td>
                                 <td>{{ item.descuento }}</td>
                                 <td>{{ item.total }}</td>
+                                <td>{{ item.total_iva }}</td>
                                 <td>
-                                    <button class="btn btn-warning btn-circle"><i class="far fa-edit"></i></button>
+                                    <button type="button" class="btn btn-warning btn-circle"
+                                    onclick="borrar_detalle({{ item.id }})"
+                                    >
+                                    <i class="fas fa-history">
+
+                                    </i></button>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -332,10 +339,76 @@ function calcular_detalle()
         $("#sub_total").val({{ enc.sub_total }});
         $("#descuento").val({{ enc.descuento }});
         $("#subtotal_iva").val({{ enc.subtotal_iva }});
-        $("#total").val({{ enc.total_iva }});
+        $("#total").val("{{ enc.total_iva }}");
 
 
 
     });
+
+    function borrar_detalle(id)
+    {
+        // mensaje(id);
+        $.confirm({
+            theme:"modern",
+            icon:"fab fa-keycdn",
+            type:'red',
+            title: "Confirmación Requerida",
+            content: 'url:/fac/facturas/borrar-detalle/' + id,
+            onContentReady: function () {
+                var self = this;
+                this.$content.find('#usuario').val('{{ user.username }}');
+                this.$content.find('#usuario').select();
+                this.$content.find('#usuario').focus();
+            },
+            buttons:{
+                borrar:{
+                    text:"Borrar",
+                    btnClass:"btn btn-danger",
+                    action: function(){
+                        var usuario = this.$content.find('input#usuario');
+	                    var pass = this.$content.find('input#password');
+
+                        if(!usuario.val().trim()){
+                            mensaje("Usuario es requerido",'red');
+                            return false;
+                        }
+
+                        if(!pass.val().trim()){
+                            // $.alert({
+                            //     title:"Error",
+                            //     content: "Contraseña es Requerida",
+                            //     type: 'red'
+                            // });
+                            mensaje("Contraseña es Requerida","red");
+                            return false;
+                        }
+
+                        var data = {"usuario":usuario.val(),"pass":pass.val()};
+	                    console.log(data);
+
+                        var token = '{{csrf_token}}';
+                        $.ajax({
+                            headers: { "X-CSRFToken": token },
+                            type:"POST",
+                            data:data,
+                            url: '/fac/facturas/borrar-detalle/' + id,
+                            success: function(r){
+                                console.log(r);
+                                if(r==="ok"){
+                                    location.reload(true);
+                                }else{
+                                    mensaje(r,'red');
+                                }
+                            },
+                            error: function(a,b,c){
+                                mensaje(c);
+                            }
+                        });
+                    }
+                    },
+                cancelar: function(){}
+                }
+        });
+    }
 </script>
 {% endblock %}

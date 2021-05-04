@@ -8,6 +8,8 @@ from django.http import HttpResponse
 from datetime import datetime
 from django.contrib import messages
 
+from django.contrib.auth import authenticate
+
 from bases.views import SinPrivilegios, VistaBaseCreate, VistaBaseEdit
 from .models import Cliente, FacturaDet, FacturaEnc
 from .forms import ClienteForm
@@ -66,7 +68,6 @@ def facturas(request,id=None):
 
     if request.method == "GET":
         enc = FacturaEnc.objects.filter(pk=id).first()
-
         if not  enc:
             encabezado = {
                 'id':0,
@@ -86,11 +87,13 @@ def facturas(request,id=None):
                 'cliente':enc.cliente,
                 'sub_total':enc.sub_total,
                 'descuento':enc.descuento,
-                'total':enc.total
+                'total':enc.total,
+                'subtotal_iva':enc.subtotal_iva,
+                'total_iva':enc.total_iva
             }
-            detalle=FacturaDet.objects.filter(factura=enc)
-            contexto = {"enc":encabezado,"det":detalle,"clientes":clientes}  
-            return render(request,template_name,contexto)
+        detalle=FacturaDet.objects.filter(factura=enc)
+        contexto = {"enc":encabezado,"det":detalle,"clientes":clientes}  
+        return render(request,template_name,contexto)
 
     if request.method == "POST":
         cliente = request.POST.get("enc_cliente")
@@ -142,3 +145,37 @@ def facturas(request,id=None):
 
 class ProductoView(inv.ProductoView):
     template_name='fac/buscar_producto.html'
+
+def borrar_detalle_factura(request, id):
+    template_name = "fac/factura_borrar_detalle.html"
+
+    det = FacturaDet.objects.get(pk=id)
+
+    if request.method=="GET":
+        context={"det":det}
+
+    if request.method == "POST":
+        usr = request.POST.get("usuario")
+        pas = request.POST.get("pass")
+
+        user =authenticate(username=usr,password=pas)
+
+        if not user:
+            return HttpResponse("Usuario o Clave Incorrecta")
+        
+        if not user.is_active:
+            return HttpResponse("Usuario Inactivo")
+
+        if user.is_superuser or user.has_perm("fac.sup_caja_facturadet"):
+            det.id = None
+            det.cantidad = (-1 * det.cantidad)
+            det.sub_total = (-1 * det.sub_total)
+            det.descuento = (-1 * det.descuento)
+            det.total = (-1 * det.total)
+            det.save()
+
+            return HttpResponse("ok")
+
+        return HttpResponse("Usuario no autorizado")
+    
+    return render(request,template_name,context)
