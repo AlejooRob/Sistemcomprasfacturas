@@ -15,6 +15,8 @@ from cmp.forms import ProveedorForm, ComprasEncForm
 from bases.views import SinPrivilegios
 from inv.models import Producto
 
+
+
 class ProveedorView(SinPrivilegios, generic.ListView):
     model = Proveedor
     template_name = "cmp/proveedor_list.html"
@@ -35,6 +37,7 @@ class ProveedorNew(SuccessMessageMixin, SinPrivilegios,\
         form.instance.uc = self.request.user
         #print(self.request.user.id)
         return super().form_valid(form)
+
 
 
 class ProveedorEdit(SuccessMessageMixin, SinPrivilegios,\
