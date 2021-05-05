@@ -232,8 +232,6 @@
         $("#frmCompras").submit(function(e){
 
             var  no_fact = $("#id_no_factura").val();
-            console.log(no_fact);
-            
             if(no_fact.trim()==""){
                 e.preventDefault()
                 $.alert({

@@ -410,5 +410,15 @@ function calcular_detalle()
                 }
         });
     }
+
+    $("form").submit(function(e){
+        var existencia = +$("#existencia").val();
+        var cantidad = +$("#cantidad").val();
+
+        if(cantidad>existencia){
+            mensaje("No hay existencia suficiente");
+            return false;
+        }
+    });
 </script>
 {% endblock %}
