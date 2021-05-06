@@ -5,8 +5,8 @@
     {% csrf_token %}
 <div class="card shadow mb-4">
     <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <a href="#" class="btn btn-danger">Guardar</a>
-        <a href="#" class="btn btn-success">Imprimir</a>
+        <!-- <a href="#" class="btn btn-danger">Guardar</a> -->
+        <a href="{% url 'fac:factura_imprimir_one' enc.id %}" class="btn btn-success" target="_factura">Imprimir</a>
         <a href="{% url 'fac:factura_list' %}" class="btn btn-info">Cancelar</a>
     </div>
     <div class="card-body">
@@ -25,12 +25,25 @@
                                 Cliente:
                             </div>
                             <div class="col-lg-5 form-group">
-                                <select name="enc_cliente" id="enc_cliente" class="form-control">
+                                <!-- <select name="enc_cliente" id="enc_cliente" class="form-control">
                                     <option value="0">Seleccione Cliente</option>
                                     {% for item in clientes %}
                                         <option value="{{item.id}}">{{ item.nombres }} {{item.apellidos}} </option>
                                     {% endfor %}
-                                </select>
+                                </select> -->
+                                <div class="row mr-1">
+                                    <div class="col-lg-11">
+                                        <select name="enc_cliente" id="enc_cliente" class="form-control">
+                                            <option value="0">Seleccione Cliente</option>
+                                            {% for item in clientes %}
+                                                <option value="{{item.id}}">{{ item.nombres }} {{ item.apellidos }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-lg-1">
+                                        <button class="btn btn-outline-danger btn-sm" id="btnEditCliente"><i class="far fa-edit"></i></button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -167,7 +180,7 @@
                             <th data-field="cantidad">Cant</th>
                             <th data-field="subtotal">S. Total</th>
                             <th data-field="descuento">Des.</th>
-                            <th data-field="total">Total</th>
+                            <th data-field="subtotal_iva">IVA</th>
                             <th data-field="total">Total IVA</th>
                             <th class="all">Acciones</th>
                         </thead>
@@ -180,7 +193,7 @@
                                 <td>{{ item.cantidad }}</td>
                                 <td>{{ item.sub_total }}</td>
                                 <td>{{ item.descuento }}</td>
-                                <td>{{ item.total }}</td>
+                                <td> {{ item.subtotal_iva }} </td>
                                 <td>{{ item.total_iva }}</td>
                                 <td>
                                     <button type="button" class="btn btn-warning btn-circle"
@@ -262,7 +275,7 @@ function calcular_detalle()
             return false;
         }
 
-        let path = "{% url 'api:producto_list' %}" + codigo;
+        var path = "{% url 'api:producto_list' %}" + codigo;
         $.ajax({
             type:"GET",
             url: path,
@@ -338,7 +351,7 @@ function calcular_detalle()
         $("#fecha").val("{{ enc.fecha|date:'Y-m-d' }}");
         $("#sub_total").val({{ enc.sub_total }});
         $("#descuento").val({{ enc.descuento }});
-        $("#subtotal_iva").val({{ enc.subtotal_iva }});
+        $("#subtotal_iva").val({{ enc.subtotal_iva|floatformat:2 }});
         $("#total").val("{{ enc.total_iva }}");
 
 
@@ -415,10 +428,30 @@ function calcular_detalle()
         var existencia = +$("#existencia").val();
         var cantidad = +$("#cantidad").val();
 
-        if(cantidad>existencia){
+        if(cantidad > existencia){
             mensaje("No hay existencia suficiente");
             return false;
         }
+    });
+
+    $("#btnEditCliente").click(function(e){
+        e.preventDefault();
+
+        var idCliente = $("#enc_cliente").val();
+        var url;
+        const qs ="?t=fc";
+        //alert(idCliente);
+
+        if(idCliente===null || idCliente===undefined){
+            url = "/fac/clientes/new" + qs;
+            //alert(url);
+            abrir_modal(url);
+        }else{
+            url = "/fac/clientes/"+idCliente + qs;
+            abrir_modal(url);
+        }
+        var token = '{{csrf_token}}';
+
     });
 </script>
 {% endblock %}

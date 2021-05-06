@@ -19,7 +19,7 @@ class ClienteForm(forms.ModelForm):
     def clean(self):
         try:
             sc = Cliente.objects.get(
-                descripcion=self.cleaned_data["descripcion"].upper()
+                email=self.cleaned_data["email"]
             )
 
             if not self.instance.pk:
@@ -28,6 +28,6 @@ class ClienteForm(forms.ModelForm):
             elif self.instance.pk!=sc.pk:
                 print("Cambio no permitido")
                 raise forms.ValidationError("Cambio No Permitido")
-        except Proveedor.DoesNotExist:
+        except Cliente.DoesNotExist:
             pass
         return self.cleaned_data

@@ -31,12 +31,33 @@ class ClienteNew(VistaBaseCreate):
     success_url=reverse_lazy('fac:cliente_list')
     permission_required='fac.add_cliente'
 
+    def get(self, request, *args, **kwargs):        
+        try:
+            t = request.GET["t"]
+        except:
+            t = None
+        
+        form = self.form_class(initial=self.initial)
+        return render(request, self.template_name, {'form':form, 't':t})
+
 class ClienteEdit(VistaBaseEdit):
     model=Cliente
     template_name='fac/cliente_form.html'
     form_class=ClienteForm
     success_url=reverse_lazy('fac:cliente_list')
     permission_required='fac.change_cliente'
+
+    def get(self, request, *args, **kwargs):
+        try:
+            t = request.GET["t"]
+        except:
+            t = None
+        
+        self.object = self.get_object()
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        context = self.get_context_data(object=self.object, form=form, t=t)
+        return self.render_to_response(context)
 
 @login_required(login_url='/login/')
 @permission_required('fac.change_cliente', login_url='/login/')
@@ -58,6 +79,15 @@ class FacturaView(SinPrivilegios, generic.ListView):
     context_object_name = 'obj'
     permission_required = 'fac.view_facturaenc'
 
+    def get_queryset(self):
+        user = self.request.user
+        qs = super().get_queryset()
+        
+        if not user.is_superuser:
+            qs=qs.filter(uc=user)
+
+        return qs
+
 @login_required(login_url='/login/')
 @permission_required('fac.change_facturaenc', login_url='bases:sin_privilegios')
 def facturas(request,id=None):
@@ -68,6 +98,16 @@ def facturas(request,id=None):
 
     if request.method == "GET":
         enc = FacturaEnc.objects.filter(pk=id).first()
+        if id:
+            if not enc:
+                messages.error(request,'Factura No Existe')
+                return redirect("fac:factura_list")
+
+            usr = request.user
+            if not usr.is_superuser:
+                if enc.uc != usr:
+                    messages.error(request,'Factura no fue creada por usuario')
+                    return redirect("fac:factura_list")
         if not  enc:
             encabezado = {
                 'id':0,

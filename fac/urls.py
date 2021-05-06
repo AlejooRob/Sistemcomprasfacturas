@@ -5,6 +5,8 @@ from .views import ClienteView, ClienteNew, ClienteEdit, clienteInactivar, \
     ProductoView, \
     borrar_detalle_factura
 
+from .reportes import imprimir_factura_recibo, imprimir_factura_list
+
 urlpatterns = [
     
     path('clientes/',ClienteView.as_view(), name='cliente_list'),
@@ -20,4 +22,7 @@ urlpatterns = [
     
     path('facturas/borrar-detalle/<int:id>',borrar_detalle_factura, name='factura_borrar_detalle'),
 
+    path('facturas/imprimir/<int:id>',imprimir_factura_recibo, name="factura_imprimir_one"),
+
+    path('facturas/imprimir-todas/<str:f1>/<str:f2>',imprimir_factura_list, name="factura_imprimir_all"),
 ]
